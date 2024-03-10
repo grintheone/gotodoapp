@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 )
 
 const (
@@ -11,13 +12,26 @@ const (
 	port string = ":3000"
 )
 
-func ping(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("pong"))
+type application struct {
+	errorLog *log.Logger
+	infoLog  *log.Logger
 }
 
 func main() {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", ping)
+	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+
+	app := &application{
+		errorLog: errorLog,
+		infoLog:  infoLog,
+	}
+
+	srv := &http.Server{
+		Addr:     host + port,
+		ErrorLog: errorLog,
+		Handler:  app.routes(),
+	}
+
 	fmt.Printf("Server started on port %s\n", port)
-	log.Fatal(http.ListenAndServe(host+port, mux))
+	log.Fatal(srv.ListenAndServe())
 }
