@@ -1,1 +1,1 @@
-Basic todo-app build with golang
+Basic todo-app built with golang
